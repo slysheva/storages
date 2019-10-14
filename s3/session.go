@@ -54,9 +54,14 @@ func getAWSRegion(s3Bucket string, config *aws.Config, settings map[string]strin
 	}
 }
 
+// DefaultRetryer implements basic retry logic using exponential backoff for
+// most services. If you want to implement custom retry logic, you can implement the
+// request.Retryer interface.
+
 func getDefaultConfig(settings map[string]string) *aws.Config {
 	config := defaults.Get().Config.
 		WithRegion(settings[RegionSetting])
+	WithRetryer(config, New())
 
 	provider := &credentials.StaticProvider{Value: credentials.Value{
 		AccessKeyID:     getFirstSettingOf(settings, []string{AccessKeyIdSetting, AccessKeySetting}),
